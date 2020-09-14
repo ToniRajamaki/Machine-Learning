@@ -14,7 +14,7 @@ from PIL import Image
 def class_acc(pred,gt):
 
     truePositive = 0
-    pictureQuantity = len(gt)
+    pictureQuantity = len(pred)
     for i in range(pictureQuantity):
        # print(pred[i], gt[i])
         if pred[i] == gt[i]:
@@ -83,56 +83,43 @@ def setting_up_training_datasets():
     return all_images, all_classes
 
 #Random test
-def test_class_acc_with_random_array():
+def test_class_acc_with_random_array(test_classes):
     #creating prediction array from randomclass
     randomClass = cifar10_classifier_random(training_classes)
     temp = [randomClass]
     randomPredictionArray = len(training_classes) * temp
     #comparing randomArray with test_data classes
-    class_acc(randomPredictionArray,Y_test)
+    class_acc(randomPredictionArray,test_classes)
 
 #Renders pictures, not used
-def for_each_picture():
+def for_each_picture(picturesIterated,training_images,training_classes,label_names):
 
-    #original range was X.shape[0]
+
     for i in range(picturesIterated):
         if True:
             plt.figure(1);
             plt.clf()
-            plt.imshow(X_training[i])
-            plt.title(f"Image {i} label={label_names[Y_training[i]]} (num {Y_training[i]})")
+            plt.imshow(training_images[i])
+            plt.title(f"Image {i} label={label_names[training_classes[i]]} (num {training_classes[i]})")
             plt.pause(0.1)
-
-
-
-#unclear TO DO
-image_quantity = 10000
-split_Y_test = Y_test[0:image_quantity]
-
-#Splitting training image batch
-#training_images = X_training[0:image_quantity]
-#training_images_1D = convert_images_to_1d_arrays(training_images)
-
-#Choosing how many images to classify
-quanity_to_classify = 100
-test_images = X_test[0:quanity_to_classify]
-test_images_1D = convert_images_to_1d_arrays(test_images)
-
+    return
 
 #runs closest distance for each image in test dataset, and calls class_acc to compare predictions with actual data
-def cifar_10_classifier_1nn():
+def cifar_10_classifier_1nn(training_images, training_classes,test_classes):
 
     prediction_array = []
     count = 0
+    image_quantity = len(test_classes)
+    print(len(training_images), len(training_classes), len(test_classes))
 
     for i in range(image_quantity):
         count = count + 1
         print(count,' / ',image_quantity)
-        predicted_class = closest_distance(test_images[i],training_images,training_image_classes,image_quantity)
+        predicted_class = closest_distance(test_images[i],training_images,training_classes,image_quantity)
         prediction_array.append(predicted_class)
 
     #Comparing predicted array with actual classes
-    class_acc(prediction_array,split_Y_test)
+    class_acc(prediction_array,test_classes)
     return
 
 #Compares one image with every training image, finds the datapoint that is closest and returns it's class
@@ -154,15 +141,25 @@ def closest_distance(test_image, training_images,training_image_classes, image_q
 
     return prediction_class
 
+def set_training_data_quanity(num):
+    tr_images = training_images[0:num]
+    tr_classes = training_classes[0:num]
+    return tr_images,tr_classes
 
-#t = time.time()
-#test_class_acc_with_random_array()
-#cifar10_classifier_1nn()
-#print(time.time() - t)
-
-
+def set_test_date_size(num):
+    te_images = test_images[0:num]
+    te_classes = test_classes[0:num]
+    return te_images, te_classes
 
 training_images, training_classes = setting_up_training_datasets()
 test_images, test_classes = setting_up_test_dataset()
 
+TEST_DATA_SIZE = 2500        # 1 - 10,000
+TRAINING_DATA_SIZE = 50000     # 1 - 50,0000
+training_images, training_classes = set_training_data_quanity(TRAINING_DATA_SIZE)
+test_images, test_classes = set_test_date_size(TEST_DATA_SIZE)
 
+
+t = time.time()
+cifar_10_classifier_1nn(training_images,training_classes,test_classes)
+print(time.time() - t)
