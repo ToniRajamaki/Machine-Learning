@@ -1,7 +1,8 @@
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
-from random import random
+import random
+from PIL import Image
 
 
 
@@ -20,6 +21,12 @@ def class_acc(pred,gt):
 
     return
 
+# chooses random class from temp data, then calls class_acc with prediction array
+# of randomclass
+def cifar10_classifier_random(x):
+
+    randomClassFromTestData = random.choice(x)
+    return randomClassFromTestData
 
 
 def unpickle(file):
@@ -28,15 +35,7 @@ def unpickle(file):
     return dict
 
 
-picturesIterated = 2000
-#init predictions
-temp = [1]
-predictions = picturesIterated*temp
-
-
-
-
-
+picturesIterated = 1
 
 #datadict = unpickle('/home/kamarain/Data/cifar-10-batches-py/data_batch_1')
 datadict = unpickle('cifar-10-batches-py/test_batch')
@@ -50,17 +49,34 @@ X = X.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("uint8")
 Y = np.array(Y)
 
 groundTruths = Y[0:picturesIterated]
-class_acc(predictions,groundTruths)
+
+def test_class_acc_with_random_array():
+    #creating prediction array from randomclass
+    randomClass = cifar10_classifier_random(Y)
+    temp = [randomClass]
+    randomPredictionArray = len(Y) * temp
+
+    class_acc(randomPredictionArray,Y)
+
+
+def for_each_picture():
+
+    #original range was X.shape[0]
+    for i in range(picturesIterated):
+        if True:
+            plt.figure(1);
+            plt.clf()
+            plt.imshow(X[i])
+            plt.title(f"Image {i} label={label_names[Y[i]]} (num {Y[i]})")
+
+            #print(X[i])
+            img = X[i]
+            rows, cols, colors = img.shape  # gives dimensions for RGB array
+            oneD_image_array = img.reshape(rows * cols * colors)
 
 
 
-#original range was X.shape[0]
-for i in range(picturesIterated):
-    # Show some images randomly
-    #if random() > 0.999:
-    if True:
-        plt.figure(1);
-        plt.clf()
-       # plt.imshow(X[i])
-        plt.title(f"Image {i} label={label_names[Y[i]]} (num {Y[i]})")
-        plt.pause(0.01)
+            plt.pause(1000)
+
+
+for_each_picture()
