@@ -14,7 +14,7 @@ from PIL import Image
 def class_acc(pred,gt):
 
     truePositive = 0
-    pictureQuantity = len(pred)
+    pictureQuantity = len(gt)
     for i in range(pictureQuantity):
        # print(pred[i], gt[i])
         if pred[i] == gt[i]:
@@ -87,7 +87,7 @@ def test_class_acc_with_random_array(test_classes):
     #creating prediction array from randomclass
     randomClass = cifar10_classifier_random(training_classes)
     temp = [randomClass]
-    randomPredictionArray = len(training_classes) * temp
+    randomPredictionArray = np.array(len(training_classes) * temp)
     #comparing randomArray with test_data classes
     class_acc(randomPredictionArray,test_classes)
 
@@ -154,12 +154,13 @@ def set_test_date_size(num):
 training_images, training_classes = setting_up_training_datasets()
 test_images, test_classes = setting_up_test_dataset()
 
-TEST_DATA_SIZE = 2500        # 1 - 10,000
-TRAINING_DATA_SIZE = 50000     # 1 - 50,0000
+TEST_DATA_SIZE = 100        # 1 - 10,000
+TRAINING_DATA_SIZE = 30000     # 1 - 50,0000
 training_images, training_classes = set_training_data_quanity(TRAINING_DATA_SIZE)
 test_images, test_classes = set_test_date_size(TEST_DATA_SIZE)
 
 
 t = time.time()
 cifar_10_classifier_1nn(training_images,training_classes,test_classes)
+#test_class_acc_with_random_array(test_classes)
 print(time.time() - t)
