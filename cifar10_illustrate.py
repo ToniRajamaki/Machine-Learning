@@ -3,11 +3,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 import math
+import time
 from PIL import Image
 
 
 
 #gt is the ground truth
+#takes in two array parameters and compares the values
+#returns information how the comparison went
 def class_acc(pred,gt):
 
     truePositive = 0
@@ -19,22 +22,20 @@ def class_acc(pred,gt):
 
     print('Predictions: ',truePositive,' / ', pictureQuantity)
     print('Percentage: ', 100 * truePositive / pictureQuantity,'%')
-
     return
 
-# chooses random class from temp data, then calls class_acc with prediction array
-# of randomclass
+# chooses random class from array of classes
 def cifar10_classifier_random(dataSet):
 
     randomClassFromTestData = random.choice(dataSet)
     return randomClassFromTestData
 
-
+#Takes in array of images and converts it to array with dimensions of [1x3072]
 def convert_images_to_1d_arrays(images_array):
 
     converted_images = []
     length = len(images_array)
-    rows, cols, colors = images_array[0].shape # 32, 32, 3
+    rows, cols, colors = images_array[0].shape  # 32, 32, 3
 
     for i in range(length):
         img = images_array[i]
@@ -49,41 +50,106 @@ def unpickle(file):
         dict = pickle.load(f, encoding="latin1")
     return dict
 
-
+#turha varmaan
 picturesIterated = 1
 
-datadict = unpickle('cifar-10-batches-py/data_batch_1')
-X_training = datadict["data"]
-Y_training = datadict["labels"]
+t_3 = unpickle('cifar-10-batches-py/data_batch_3')
+t_4 = unpickle('cifar-10-batches-py/data_batch_4')
+t_5 = unpickle('cifar-10-batches-py/data_batch_5')
+
+
+#Setting up TRAINING datasets
+def setting_up_training_datasets():
+
+    t_1 = unpickle('cifar-10-batches-py/data_batch_1')
+    t_2 = unpickle('cifar-10-batches-py/data_batch_2')
+    X_training = t_1["data"]
+    Y_training = t_1["labels"]
+    labeldict = unpickle('cifar-10-batches-py/batches.meta')
+    label_names = labeldict["label_names"]
+    X_training = X_training.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1).astype("uint8")  # Array of images
+    Y_training = np.array(Y_training)  # Array of classes of each image
+    Y_training.shape
+
+    X_training = t_1["data"]
+    Y_training = t_1["labels"]
+    labeldict = unpickle('cifar-10-batches-py/batches.meta')
+    label_names = labeldict["label_names"]
+    X_training = X_training.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1).astype("uint8")  # Array of images
+    Y_training = np.array(Y_training)  # Array of classes of each image
+
+
+
+
+
+
+def set_up_data(data):
+    X_training = data["data"]
+    Y_training = data["labels"]
+    labeldict = unpickle('cifar-10-batches-py/batches.meta')
+    label_names = labeldict["label_names"]
+    X_training = X_training.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1).astype("uint8")  # Array of images
+    Y_training = np.array(Y_training)  # Array of classes of each image
+
+
+    return
+
+X_training = t_1["data"]
+Y_training = t_1["labels"]
 labeldict = unpickle('cifar-10-batches-py/batches.meta')
 label_names = labeldict["label_names"]
-X_training = X_training.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("uint8")
-Y_training = np.array(Y_training)
-training_image_classes = Y_training
+x_images = X_training.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1).astype("uint8")  # Array of images
+y_classes = np.array(Y_training)  # Array of classes of each image
+
+
+
+print(all_training_images)
+set_up_data(t_1)
+set_up_data(t_2)
+set_up_data(t_3)
+set_up_data(t_4)
+set_up_data(t_5)
+
+print("oi")
+print(all_training_images.shape)
+
+
+
+X_training = t_1["data"]
+Y_training = t_1["labels"]
+labeldict = unpickle('cifar-10-batches-py/batches.meta')
+label_names = labeldict["label_names"]
+X_training = X_training.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("uint8")  # Array of images
+Y_training = np.array(Y_training) # Array of classes of each image
+
+#refactor this somewhere
+training_image_classes = Y_training # Array of classes of each image
+
+#Setting up TEST date
 
 test_datadict = unpickle('cifar-10-batches-py/test_batch')
 X_test = test_datadict["data"]
 Y_test = test_datadict["labels"]
 labeldict = unpickle('cifar-10-batches-py/batches.meta')
 label_names = labeldict["label_names"]
-X_test = X_test.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("uint8")
-Y_test = np.array(Y_test)
-
-
+X_test = X_test.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("uint8") # Array of images
+Y_test = np.array(Y_test) # Array of classes of each image
 
 
 
 #turha varmaa
 #groundTruths = Y_training[0:picturesIterated]
 
+#Random test
 def test_class_acc_with_random_array():
     #creating prediction array from randomclass
     randomClass = cifar10_classifier_random(Y_training)
     temp = [randomClass]
     randomPredictionArray = len(Y_training) * temp
-    class_acc(randomPredictionArray,Y_training)
+    #comparing randomArray with test_data classes
+    class_acc(randomPredictionArray,Y_test)
 
-
+#Renders pictures, not used
 def for_each_picture():
 
     #original range was X.shape[0]
@@ -91,49 +157,63 @@ def for_each_picture():
         if True:
             plt.figure(1);
             plt.clf()
-            #plt.imshow(X_training[i])
+            plt.imshow(X_training[i])
             plt.title(f"Image {i} label={label_names[Y_training[i]]} (num {Y_training[i]})")
-            #plt.pause(0.1)
+            plt.pause(0.1)
 
 
 
-for_each_picture()
-
-image_quantity = 1500
+#unclear TO DO
+image_quantity = 10000
 split_Y_test = Y_test[0:image_quantity]
 
+#Splitting training image batch
 training_images = X_training[0:image_quantity]
-converted_training_images = convert_images_to_1d_arrays(training_images)
+training_images_1D = convert_images_to_1d_arrays(training_images)
 
-test_images = X_test[0:image_quantity]
-converted_test_images = convert_images_to_1d_arrays(test_images)
+#Choosing how many images to classify
+quanity_to_classify = 100
+test_images = X_test[0:quanity_to_classify]
+test_images_1D = convert_images_to_1d_arrays(test_images)
 
 
-def cifar_10():
+#runs closest distance for each image in test dataset, and calls class_acc to compare predictions with actual data
+def cifar_10_classifier_1nn():
+
     prediction_array = []
     count = 0
 
     for i in range(image_quantity):
         count = count + 1
         print(count,' / ',image_quantity)
-        distance, predicted_class = closest_distance(test_images[i],training_images,training_image_classes,image_quantity)
-
+        predicted_class = closest_distance(test_images[i],training_images,training_image_classes,image_quantity)
         prediction_array.append(predicted_class)
 
+    #Comparing predicted array with actual classes
     class_acc(prediction_array,split_Y_test)
     return
 
+#Compares one image with every training image, finds the datapoint that is closest and returns it's class
+#
+# test_image is 1-D array
+# training_images is 1-D array of every training image
+# training_image_classes is array 1-D array of classes of each image from training set
+# image_quantity is passed in for loop, so no need to calc it each time
 def closest_distance(test_image, training_images,training_image_classes, image_quantity):
+
     closest_distance_so_far = math.inf
-    prediction_class = 10
+    prediction_class = math.inf
 
     for i in range(image_quantity):
-
-        distance = np.sum(np.square(test_image - training_images[i]))
+        distance = np.sum(np.square(test_image - training_images[i])) #distance between images
         if distance < closest_distance_so_far:
             closest_distance_so_far = distance
             prediction_class = training_image_classes[i]
-    return closest_distance_so_far, prediction_class
+
+    return prediction_class
 
 
-cifar_10()
+t = time.time()
+test_class_acc_with_random_array()
+#cifar10_classifier_1nn()
+print(time.time() - t)
