@@ -9,12 +9,14 @@ def unpickle(file):
     return dict
 
 #datadict = unpickle('/home/kamarain/Data/cifar-10-batches-py/data_batch_1')
-datadict = unpickle('/home/kamarain/Data/cifar-10-batches-py/test_batch')
+#datadict = unpickle('/home/kamarain/Data/cifar-10-batches-py/test_batch')
+datadict = unpickle('cifar-10-batches-py/test_batch')
+
 
 X = datadict["data"]
 Y = datadict["labels"]
 
-labeldict = unpickle('/home/kamarain/Data/cifar-10-batches-py/batches.meta')
+labeldict = unpickle('cifar-10-batches-py/batches.meta')
 label_names = labeldict["label_names"]
 
 X = X.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("uint8")
@@ -22,9 +24,10 @@ Y = np.array(Y)
 
 for i in range(X.shape[0]):
     # Show some images randomly
-    if random() > 0.999:
+    #if random() > 0.999:
+    if True:
         plt.figure(1);
         plt.clf()
         plt.imshow(X[i])
         plt.title(f"Image {i} label={label_names[Y[i]]} (num {Y[i]})")
-        plt.pause(1)
+        plt.pause(0.01)
