@@ -29,6 +29,21 @@ def cifar10_classifier_random(x):
     return randomClassFromTestData
 
 
+def convert_images_to_1d_arrays(images_array):
+
+    converted_images = []
+    length = len(images_array)
+    rows, cols, colors = images_array[0].shape # 32, 32, 3
+
+    for i in range(length):
+        img = images_array[i]
+        oneD_image_array = img.reshape(rows * cols * colors) # from 3 matrixes to 1-D array
+        converted_images.append(oneD_image_array)
+        print(oneD_image_array)
+
+    return converted_images
+
+
 def unpickle(file):
     with open(file, 'rb') as f:
         dict = pickle.load(f, encoding="latin1")
@@ -37,8 +52,8 @@ def unpickle(file):
 
 picturesIterated = 1
 
-#datadict = unpickle('/home/kamarain/Data/cifar-10-batches-py/data_batch_1')
-datadict = unpickle('cifar-10-batches-py/test_batch')
+datadict = unpickle('cifar-10-batches-py/data_batch_1')
+#datadict = unpickle('cifar-10-batches-py/test_batch')
 
 
 X = datadict["data"]
@@ -68,15 +83,12 @@ def for_each_picture():
             plt.clf()
             plt.imshow(X[i])
             plt.title(f"Image {i} label={label_names[Y[i]]} (num {Y[i]})")
-
-            #print(X[i])
-            img = X[i]
-            rows, cols, colors = img.shape  # gives dimensions for RGB array
-            oneD_image_array = img.reshape(rows * cols * colors)
-
-
-
-            plt.pause(1000)
+            plt.pause(0.1)
 
 
 for_each_picture()
+
+training_images = X[0:20]
+converted_test_images = convert_images_to_1d_arrays(training_images)
+
+
