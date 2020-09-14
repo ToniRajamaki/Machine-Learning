@@ -50,77 +50,72 @@ def unpickle(file):
         dict = pickle.load(f, encoding="latin1")
     return dict
 
-#turha varmaan
-picturesIterated = 1
-
-t_3 = unpickle('cifar-10-batches-py/data_batch_3')
-t_4 = unpickle('cifar-10-batches-py/data_batch_4')
-t_5 = unpickle('cifar-10-batches-py/data_batch_5')
-
 
 #Setting up TRAINING datasets
 def setting_up_training_datasets():
 
     t_1 = unpickle('cifar-10-batches-py/data_batch_1')
     t_2 = unpickle('cifar-10-batches-py/data_batch_2')
+    t_3 = unpickle('cifar-10-batches-py/data_batch_3')
+    t_4 = unpickle('cifar-10-batches-py/data_batch_4')
+    t_5 = unpickle('cifar-10-batches-py/data_batch_5')
+    all_classes = []
+    all_images = []
+
+    #T1
     X_training = t_1["data"]
     Y_training = t_1["labels"]
-    labeldict = unpickle('cifar-10-batches-py/batches.meta')
-    label_names = labeldict["label_names"]
+    all_classes += Y_training
+    X_training = X_training.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1).astype("uint8")  # Array of images
+    Y_training = np.array(Y_training)  # Array of classes of each image 1D
+    t1_images_1d = convert_images_to_1d_arrays(X_training)
+
+    #T2
+    X_training = t_2["data"]
+    Y_training = t_2["labels"]
+    all_classes += Y_training
     X_training = X_training.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1).astype("uint8")  # Array of images
     Y_training = np.array(Y_training)  # Array of classes of each image
-    Y_training.shape
+    t2_images_1d = convert_images_to_1d_arrays(X_training)
 
-    X_training = t_1["data"]
-    Y_training = t_1["labels"]
-    labeldict = unpickle('cifar-10-batches-py/batches.meta')
-    label_names = labeldict["label_names"]
+    # T3
+    X_training = t_3["data"]
+    Y_training = t_3["labels"]
+    all_classes += Y_training
     X_training = X_training.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1).astype("uint8")  # Array of images
     Y_training = np.array(Y_training)  # Array of classes of each image
+    t3_images_1d = convert_images_to_1d_arrays(X_training)
 
-
-
-
-
-
-def set_up_data(data):
-    X_training = data["data"]
-    Y_training = data["labels"]
-    labeldict = unpickle('cifar-10-batches-py/batches.meta')
-    label_names = labeldict["label_names"]
+    # T4
+    X_training = t_4["data"]
+    Y_training = t_4["labels"]
+    all_classes += Y_training
     X_training = X_training.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1).astype("uint8")  # Array of images
     Y_training = np.array(Y_training)  # Array of classes of each image
+    t4_images_1d = convert_images_to_1d_arrays(X_training)
 
+    # T5
+    X_training = t_5["data"]
+    Y_training = t_5["labels"]
+    all_classes += Y_training
+    X_training = X_training.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1).astype("uint8")  # Array of images
+    Y_training = np.array(Y_training)  # Array of classes of each image
+    t5_images_1d = convert_images_to_1d_arrays(X_training)
 
-    return
+    all_images = t1_images_1d + t2_images_1d + t3_images_1d + t4_images_1d + t5_images_1d
 
-X_training = t_1["data"]
-Y_training = t_1["labels"]
-labeldict = unpickle('cifar-10-batches-py/batches.meta')
-label_names = labeldict["label_names"]
-x_images = X_training.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1).astype("uint8")  # Array of images
-y_classes = np.array(Y_training)  # Array of classes of each image
-
-
-
-print(all_training_images)
-set_up_data(t_1)
-set_up_data(t_2)
-set_up_data(t_3)
-set_up_data(t_4)
-set_up_data(t_5)
-
-print("oi")
-print(all_training_images.shape)
+    np_all_images = np.array(all_images)
+    np_all_classes = np.array(all_classes)
 
 
 
-X_training = t_1["data"]
-Y_training = t_1["labels"]
-labeldict = unpickle('cifar-10-batches-py/batches.meta')
-label_names = labeldict["label_names"]
-X_training = X_training.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("uint8")  # Array of images
-Y_training = np.array(Y_training) # Array of classes of each image
+    return np_all_images, np_all_classes
+
+setting_up_training_datasets()
+
+
+
+
 
 #refactor this somewhere
 training_image_classes = Y_training # Array of classes of each image
@@ -213,7 +208,7 @@ def closest_distance(test_image, training_images,training_image_classes, image_q
     return prediction_class
 
 
-t = time.time()
-test_class_acc_with_random_array()
+#t = time.time()
+#test_class_acc_with_random_array()
 #cifar10_classifier_1nn()
-print(time.time() - t)
+#print(time.time() - t)
