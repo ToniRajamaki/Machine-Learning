@@ -53,6 +53,7 @@ def cifar_10_naivebayes_learn(images_rgb_means,classes):
     images_quanity = len(classes);
     class_mean_sums = np.zeros((10,3,1))
     class_variance_sums = np.zeros((10,3,1))
+    prior_p = np.zeros((10))
 
     #array of 10 values, each value is quanity of how many images belong to this class
     class_measurements = np.zeros((10))
@@ -67,6 +68,7 @@ def cifar_10_naivebayes_learn(images_rgb_means,classes):
         class_mean_sums[image_class][GREEN][0] += image[GREEN]
         class_mean_sums[image_class][BLUE][0] += image[BLUE]
         class_measurements[image_class] += 1
+
 
     for i in range(10):
 
@@ -95,7 +97,12 @@ def cifar_10_naivebayes_learn(images_rgb_means,classes):
         class_variance_sums[i][BLUE][0] = np.sqrt(class_variance_sums[i][BLUE][0] / class_measurements[i])
 
 
-    return class_variance_sums, class_mean_sums
+    for i in range(10):
+        prior_p[i] = class_measurements[i] / len(classes)
+
+
+
+    return class_variance_sums, class_mean_sums, prior_p
 
 
 def class_acc(pred,gt):
@@ -117,7 +124,7 @@ def calculate_probability(channel_mean, training_mean, variance):
     return (1 / (math.sqrt(2 * math.pi) * variance)) * exponent
 
 
-def cifar10_classifier_naivebayes(test_image,class_means,class_variances):
+def cifar10_classifier_naivebayes(test_image,class_means,class_variances,prior_p):
 
     best_matching_class = -math.inf
 
@@ -126,21 +133,23 @@ def cifar10_classifier_naivebayes(test_image,class_means,class_variances):
         red_p = calculate_probability(test_image[RED], class_means[i][RED], class_variances[i][RED])
         green_p = calculate_probability(test_image[GREEN], class_means[i][GREEN], class_variances[i][GREEN])
         blue_p = calculate_probability(test_image[BLUE], class_means[i][BLUE], class_variances[i][BLUE])
-        class_probability = red_p * green_p * blue_p
+        class_probability = red_p * green_p * blue_p * prior_p[i]
 
         if(best_matching_class < class_probability):
             best_matching_class = i
 
     return best_matching_class
 
-def test2(t_images, means, variances):
+def test2(t_images, means, variances,prior_p):
 
     predictionArray = np.zeros((len(t_images)))
 
-
+    count = len(t_images)
     for i in range(len(t_images)):
+        count = count -1
+        print(count)
         test_image = t_images[i]
-        best_class = cifar10_classifier_naivebayes(test_image,means,variances)
+        best_class = cifar10_classifier_naivebayes(test_image,means,variances,prior_p)
         predictionArray[i] = best_class
 
     return predictionArray
@@ -168,6 +177,6 @@ rgb_means_1 = cifar_10_color(images_1)
 rgb_means_t = cifar_10_color(t_images)
 
 
-variances, means = cifar_10_naivebayes_learn(rgb_means_1,classes_1)
-predictionArray = test2(rgb_means_t, means, variances)
+variances, means, prior_p = cifar_10_naivebayes_learn(rgb_means_1,classes_1)
+predictionArray = test2(rgb_means_t, means, variances, prior_p)
 class_acc(predictionArray,t_classes)
