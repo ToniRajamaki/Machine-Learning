@@ -73,7 +73,7 @@ def cifar_10_naivebayes_learn(images_rgb_means,classes):
         class_mean_sums[i][RED][0] = class_mean_sums[i][RED][0] / class_measurements[i]
         class_mean_sums[i][GREEN][0] = class_mean_sums[i][GREEN][0] / class_measurements[i]
         class_mean_sums[i][BLUE][0] = class_mean_sums[i][BLUE][0] / class_measurements[i]
-        #print("for class: ",i," mean is : ", class_mean_sums[i][RED][0],class_mean_sums[i][GREEN][0],class_mean_sums[i][BLUE][0] )
+
 
 
 
@@ -86,41 +86,88 @@ def cifar_10_naivebayes_learn(images_rgb_means,classes):
         class_variance_sums[image_class][GREEN][0] += np.square(image[GREEN] - class_mean_sums[image_class][GREEN][0])
         class_variance_sums[image_class][BLUE][0] += np.square(image[BLUE] - class_mean_sums[image_class][BLUE][0])
 
-    print(class_variance_sums[image_class][RED][0])
-    print(class_variance_sums)
+
 
     for i in range(10):
 
-        class_variance_sums[i][RED][0] = class_variance_sums[i][RED][0] / class_measurements[i]
-        class_variance_sums[i][GREEN][0] = class_variance_sums[i][GREEN][0] / class_measurements[i]
-        class_variance_sums[i][BLUE][0] = class_variance_sums[i][BLUE][0] / class_measurements[i]
+        class_variance_sums[i][RED][0] = np.sqrt(class_variance_sums[i][RED][0] / class_measurements[i])
+        class_variance_sums[i][GREEN][0] = np.sqrt(class_variance_sums[i][GREEN][0] / class_measurements[i])
+        class_variance_sums[i][BLUE][0] = np.sqrt(class_variance_sums[i][BLUE][0] / class_measurements[i])
 
-    print("aaaaaaaaa")
-    print(class_variance_sums)
 
+    return class_variance_sums, class_mean_sums
+
+
+def class_acc(pred,gt):
+
+    truePositive = 0
+    pictureQuantity = len(gt)
+    for i in range(pictureQuantity):
+       # print(pred[i], gt[i])
+        if pred[i] == gt[i]:
+            truePositive = truePositive + 1
+
+    print('Predictions: ',truePositive,' / ', pictureQuantity)
+    print('Percentage: ', 100 * truePositive / pictureQuantity,'%')
     return
 
-def test(images):
-    image = images[1]
-    print("test")
-    print(images.shape)
-    print(image.shape)
+def calculate_probability(channel_mean, training_mean, variance):
 
-    return
+    exponent = math.exp(-((channel_mean - training_mean) ** 2 / (2 * variance ** 2)))
+    return (1 / (math.sqrt(2 * math.pi) * variance)) * exponent
+
+
+def cifar10_classifier_naivebayes(test_image,class_means,class_variances):
+
+    best_matching_class = -math.inf
+
+    for i in range(10):
+
+        red_p = calculate_probability(test_image[RED], class_means[i][RED], class_variances[i][RED])
+        green_p = calculate_probability(test_image[GREEN], class_means[i][GREEN], class_variances[i][GREEN])
+        blue_p = calculate_probability(test_image[BLUE], class_means[i][BLUE], class_variances[i][BLUE])
+        class_probability = red_p * green_p * blue_p
+
+        if(best_matching_class < class_probability):
+            best_matching_class = i
+
+    return best_matching_class
+
+def test2(t_images, means, variances):
+
+    predictionArray = np.zeros((len(t_images)))
+
+
+    for i in range(len(t_images)):
+        test_image = t_images[i]
+        best_class = cifar10_classifier_naivebayes(test_image,means,variances)
+        predictionArray[i] = best_class
+
+    return predictionArray
+
 
 
 #Getting the training data from batch 1
 images_1, classes_1 = get_training_data('cifar-10-batches-py/data_batch_1')
+t_images, t_classes = get_training_data('cifar-10-batches-py/test_batch')
 images_1 = images_1.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1).astype("uint8")
+t_images = t_images.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1).astype("uint8")
 classes_1 = np.array(classes_1)
+t_classes = np.array(t_classes)
 
 # How many pictures we take from the batch ( 1 - 10,000 )
-DATA_SET_QUANITY = 250;
+DATA_SET_QUANITY = 10000;
 images_1 = images_1[0:DATA_SET_QUANITY]
 classes_1 = classes_1[0:DATA_SET_QUANITY]
 
-rgb_means = cifar_10_color(images_1)
-print(rgb_means.shape)
+t_images = t_images[0:DATA_SET_QUANITY]
+t_classes = t_classes[0:DATA_SET_QUANITY]
 
-print()
-cifar_10_naivebayes_learn(rgb_means,classes_1)
+
+rgb_means_1 = cifar_10_color(images_1)
+rgb_means_t = cifar_10_color(t_images)
+
+
+variances, means = cifar_10_naivebayes_learn(rgb_means_1,classes_1)
+predictionArray = test2(rgb_means_t, means, variances)
+class_acc(predictionArray,t_classes)
