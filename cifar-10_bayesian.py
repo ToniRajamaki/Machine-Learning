@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from random import random
 from skimage.transform import rescale, resize, downscale_local_mean
+import math
 
 RED = 0;
 GREEN = 1;
@@ -51,24 +52,51 @@ def cifar_10_naivebayes_learn(images_rgb_means,classes):
 
     images_quanity = len(classes);
     class_mean_sums = np.zeros((10,3,1))
+    class_variance_sums = np.zeros((10,3,1))
+
     #array of 10 values, each value is quanity of how many images belong to this class
     class_measurements = np.zeros((10))
     luokkia_2 = 0
 
-
+    #Calculating mean values for each class (r,g,b)
     for i in range(images_quanity):
         image_class = classes[i]
         image = images_rgb_means[i]
 
-        if (image_class == 2):
-            luokkia_2 = luokkia_2 + 1
-
         class_mean_sums[image_class][RED][0] += image[RED]
         class_mean_sums[image_class][GREEN][0] += image[GREEN]
         class_mean_sums[image_class][BLUE][0] += image[BLUE]
-        class_measurements[image_class - 1] += 1
+        class_measurements[image_class] += 1
 
-    print(class_mean_sums.shape)
+    for i in range(10):
+
+        class_mean_sums[i][RED][0] = class_mean_sums[i][RED][0] / class_measurements[i]
+        class_mean_sums[i][GREEN][0] = class_mean_sums[i][GREEN][0] / class_measurements[i]
+        class_mean_sums[i][BLUE][0] = class_mean_sums[i][BLUE][0] / class_measurements[i]
+        #print("for class: ",i," mean is : ", class_mean_sums[i][RED][0],class_mean_sums[i][GREEN][0],class_mean_sums[i][BLUE][0] )
+
+
+
+    #starting variance calculations
+    for i in range(images_quanity):
+        image_class = classes[i]
+        image = images_rgb_means[i]
+
+        class_variance_sums[image_class][RED][0] += np.square(image[RED] - class_mean_sums[image_class][RED][0])
+        class_variance_sums[image_class][GREEN][0] += np.square(image[GREEN] - class_mean_sums[image_class][GREEN][0])
+        class_variance_sums[image_class][BLUE][0] += np.square(image[BLUE] - class_mean_sums[image_class][BLUE][0])
+
+    print(class_variance_sums[image_class][RED][0])
+    print(class_variance_sums)
+
+    for i in range(10):
+
+        class_variance_sums[i][RED][0] = class_variance_sums[i][RED][0] / class_measurements[i]
+        class_variance_sums[i][GREEN][0] = class_variance_sums[i][GREEN][0] / class_measurements[i]
+        class_variance_sums[i][BLUE][0] = class_variance_sums[i][BLUE][0] / class_measurements[i]
+
+    print("aaaaaaaaa")
+    print(class_variance_sums)
 
     return
 
