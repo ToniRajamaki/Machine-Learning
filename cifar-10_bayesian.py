@@ -11,23 +11,29 @@ def unpickle(file):
     return dict
 
 
-# datadict = unpickle('/home/kamarain/Data/cifar-10-batches-py/data_batch_1')
-datadict = unpickle('cifar-10-batches-py/test_batch')
-
-X = datadict["data"]
-Y = datadict["labels"]
-
 labeldict = unpickle('cifar-10-batches-py/batches.meta')
 label_names = labeldict["label_names"]
 
-X = X.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1).astype("uint8")
+def get_training_data(string):
 
-Y = np.array(Y)
+    datadict = unpickle(string)
+    images = datadict["data"] #Images
+    classes = datadict["labels"] #Classes
+    return images,classes
+
+
+images_1, classes_1 = get_training_data('cifar-10-batches-py/data_batch_1')
+
+
+
+images_1 = images_1.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1).astype("uint8")
+
+classes_1 = np.array(classes_1)
 
 X_mean = np.zeros((10000, 3))
-for i in range(X.shape[0]):
+for i in range(images_1.shape[0]):
     # Convert images to mean values of each color channel
-    img = X[i]
+    img = images_1[i]
     img_8x8 = resize(img, (8, 8))
     img_1x1 = resize(img, (1, 1))
     r_vals = img_1x1[:, :, 0].reshape(1 * 1)
@@ -43,5 +49,5 @@ for i in range(X.shape[0]):
         plt.figure(1);
         plt.clf()
         plt.imshow(img_8x8)
-        plt.title(f"Image {i} label={label_names[Y[i]]} (num {Y[i]})")
+        plt.title(f"Image {i} label={label_names[classes_1[i]]} (num {classes_1[i]})")
         plt.pause(1)
