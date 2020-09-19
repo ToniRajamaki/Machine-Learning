@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 from random import random
 from skimage.transform import rescale, resize, downscale_local_mean
 
+RED = 0;
+GREEN = 1;
+BLUE = 2;
 
 def unpickle(file):
     with open(file, 'rb') as f:
@@ -43,6 +46,40 @@ def cifar_10_color(image_dataset):
 
     return image_rgb_mean
 
+#images_rgb_means shape  = ( quanity, 3 )
+def cifar_10_naivebayes_learn(images_rgb_means,classes):
+
+    images_quanity = len(classes);
+    class_mean_sums = np.zeros((10,3,1))
+    #array of 10 values, each value is quanity of how many images belong to this class
+    class_measurements = np.zeros((10))
+    luokkia_2 = 0
+
+
+    for i in range(images_quanity):
+        image_class = classes[i]
+        image = images_rgb_means[i]
+
+        if (image_class == 2):
+            luokkia_2 = luokkia_2 + 1
+
+        class_mean_sums[image_class][RED][0] += image[RED]
+        class_mean_sums[image_class][GREEN][0] += image[GREEN]
+        class_mean_sums[image_class][BLUE][0] += image[BLUE]
+        class_measurements[image_class - 1] += 1
+
+    print(class_mean_sums.shape)
+
+    return
+
+def test(images):
+    image = images[1]
+    print("test")
+    print(images.shape)
+    print(image.shape)
+
+    return
+
 
 #Getting the training data from batch 1
 images_1, classes_1 = get_training_data('cifar-10-batches-py/data_batch_1')
@@ -50,9 +87,12 @@ images_1 = images_1.reshape(10000, 3, 32, 32).transpose(0, 2, 3, 1).astype("uint
 classes_1 = np.array(classes_1)
 
 # How many pictures we take from the batch ( 1 - 10,000 )
-DATA_SET_QUANITY = 500;
+DATA_SET_QUANITY = 250;
 images_1 = images_1[0:DATA_SET_QUANITY]
 classes_1 = classes_1[0:DATA_SET_QUANITY]
 
 rgb_means = cifar_10_color(images_1)
 print(rgb_means.shape)
+
+print()
+cifar_10_naivebayes_learn(rgb_means,classes_1)
