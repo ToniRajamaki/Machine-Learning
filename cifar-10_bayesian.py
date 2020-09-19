@@ -2,6 +2,8 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from random import random
+
+from scipy.stats import norm
 from skimage.transform import rescale, resize, downscale_local_mean
 import math
 
@@ -118,27 +120,19 @@ def class_acc(pred,gt):
     print('Percentage: ', 100 * truePositive / pictureQuantity,'%')
     return
 
-def calculate_probability(channel_mean, training_mean, variance):
-
-    exponent = math.exp(-((channel_mean - training_mean) ** 2 / (2 * variance ** 2)))
-    return (1 / (math.sqrt(2 * math.pi) * variance)) * exponent
 
 
-def cifar10_classifier_naivebayes(test_image,class_means,class_variances,prior_p):
+def cifar10_classifier_naivebayes(x,mu,sigma,prior_p):
 
-    best_matching_class = -math.inf
-
+    probabilities = np.ones(10)
+    normpdf = norm.pdf
     for i in range(10):
+        for j in range(3):
+            probabilities[i] *= normpdf(x[j], mu[i][j], sigma[i][j])
+            probabilities[i] *= prior_p[i]
 
-        red_p = calculate_probability(test_image[RED], class_means[i][RED], class_variances[i][RED])
-        green_p = calculate_probability(test_image[GREEN], class_means[i][GREEN], class_variances[i][GREEN])
-        blue_p = calculate_probability(test_image[BLUE], class_means[i][BLUE], class_variances[i][BLUE])
-        class_probability = red_p * green_p * blue_p * prior_p[i]
 
-        if(best_matching_class < class_probability):
-            best_matching_class = i
-
-    return best_matching_class
+    return np.argmax(probabilities)
 
 def test2(t_images, means, variances,prior_p):
 
@@ -165,7 +159,7 @@ classes_1 = np.array(classes_1)
 t_classes = np.array(t_classes)
 
 # How many pictures we take from the batch ( 1 - 10,000 )
-DATA_SET_QUANITY = 10000;
+DATA_SET_QUANITY = 1000;
 images_1 = images_1[0:DATA_SET_QUANITY]
 classes_1 = classes_1[0:DATA_SET_QUANITY]
 
