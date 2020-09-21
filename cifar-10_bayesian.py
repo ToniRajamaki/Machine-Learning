@@ -77,7 +77,7 @@ classes_1 = np.array(classes_1)
 t_classes = np.array(t_classes)
 
 # How many pictures we take from the batch ( 1 - 10,000 )
-DATA_SET_QUANITY = 2000;
+DATA_SET_QUANITY = 500;
 images_1 = images_1[0:DATA_SET_QUANITY]
 classes_1 = classes_1[0:DATA_SET_QUANITY]
 
@@ -88,8 +88,12 @@ t_classes = t_classes[0:DATA_SET_QUANITY]
 rgb_means_1 = cifar_10_color(images_1)
 rgb_means_t = cifar_10_color(t_images)
 
-#Exercise 1, no COV matrix
+def exercise_1():
 
-stds, means, prior_p = nCm.cifar_10_naivebayes_learn(rgb_means_1,classes_1)
-predictionArray = nCm.naive_bayes_classification(rgb_means_t, means, stds, prior_p)
-class_acc(predictionArray,t_classes)
+    #Exercise 1, no COV matrix
+    stds, means, prior_p = nCm.cifar_10_naivebayes_learn(rgb_means_1,classes_1)
+    predictionArray = nCm.naive_bayes_classification(rgb_means_t, means, stds, prior_p)
+    class_acc(predictionArray,t_classes)
+    return
+
+exercise_1()

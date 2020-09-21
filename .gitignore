@@ -1,2 +1,3 @@
 venv/
 .idea/
+__pycache__/cifar10_naiveBayes_noCovMatrix.cpython-38.pyc
