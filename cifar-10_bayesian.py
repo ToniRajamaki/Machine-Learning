@@ -1,5 +1,6 @@
 import pickle
 import numpy as np
+from numpy.core._multiarray_umath import ndarray
 from scipy.stats import norm
 
 import cifar10_naiveBayes_noCovMatrix as nCm
@@ -192,7 +193,7 @@ classes_1 = np.array(classes_1)
 t_classes = np.array(t_classes)
 
 # How many pictures we take from the batch ( 1 - 10,000 )
-DATA_SET_QUANITY = 500;
+DATA_SET_QUANITY = 50;
 images_1 = images_1[0:DATA_SET_QUANITY]
 classes_1 = classes_1[0:DATA_SET_QUANITY]
 
@@ -210,5 +211,17 @@ rgb_means_images_t = cifar_10_color(t_images)
 # cov_m = np.cov(rgb_means_images_1)
 # print(cov_m.shape)
 images_by_classes = divide_images_to_classes(rgb_means_images_1,classes_1)
-for i in range(10):
-    print('Class ',i,' shape : ', images_by_classes[i].shape)
+
+#for i in range(10):
+ #   print('Class ',i,' shape : ', images_by_classes[i].shape)
+
+def calculate_cov_matrixes(images_by_classes):
+
+    sigma = np.empty(shape=(10, 3, 3))
+    for i in range(10):
+        sigma[i] = np.cov(images_by_classes[i],rowvar=False)
+
+    return sigma
+
+class_sigmas = calculate_cov_matrixes(images_by_classes)
+
