@@ -1,6 +1,6 @@
 import pickle
 import numpy as np
-
+from scipy.stats import norm
 
 import cifar10_naiveBayes_noCovMatrix as nCm
 from skimage.transform import rescale, resize, downscale_local_mean
@@ -39,10 +39,15 @@ def get_training_data(string):
 
 
 # images ( quanity , 32 , 32 ,3 )
+
+
+
 def cifar_10_color(image_dataset):
 
     image_quanity = (image_dataset.shape[0]) # How many images we are processing
     image_rgb_mean = np.zeros((image_quanity, 3))
+
+
 
     for i in range(image_quanity):
         # Convert images to mean values of each color channel
@@ -58,6 +63,7 @@ def cifar_10_color(image_dataset):
 
         image_rgb_mean[i, :] = (mu_r, mu_g, mu_b)  # shape = ( imagequanity, 3 )
 
+
     return image_rgb_mean
 
 #images_rgb_means shape  = ( quanity, 3 )
@@ -66,12 +72,29 @@ def cifar_10_color(image_dataset):
 def exercise_1():
 
     #Exercise 1, no COV matrix
-    stds, means, prior_p = nCm.cifar_10_naivebayes_learn(rgb_means_1,classes_1)
-    predictionArray = nCm.naive_bayes_classification(rgb_means_t, means, stds, prior_p)
+    stds, means, prior_p = nCm.cifar_10_naivebayes_learn(rgb_means_images_1,classes_1)
+    predictionArray = nCm.naive_bayes_classification(rgb_means_images_t, means, stds, prior_p)
     class_acc(predictionArray,t_classes)
     return
 
 
+def divide_images_to_classes(images, classes):
+
+    image_quanity = len(classes)
+    images_by_classes = [ [], [], [], [], [], [], [], [], [], [],]
+
+
+    for i in range(image_quanity):
+        current_class = classes_1[i]
+        current_image = images[i]
+        images_by_classes[current_class].append(current_image)
+
+    class_array = np.array(images_by_classes,dtype = object)
+    for i in range(10):
+        temp = np.array(class_array[i])
+        class_array[i] = temp
+
+    return class_array
 
 
 ###################################################################################################################
@@ -80,12 +103,11 @@ def cifar_10_naivebayes_learn(images_rgb_means,classes):
 
     images_quanity = len(classes);
     class_mean_sums = np.zeros((10,3,1))
-    class_std_sums = np.zeros((10,3,1))
+    cov_matrix = np.zeros((10,3,3))
     prior_p = np.zeros((10))
 
     #array of 10 values, each value is quanity of how many images belong to this class
     class_measurements = np.zeros((10))
-    luokkia_2 = 0
 
     #Calculating mean values for each class (r,g,b)
     for i in range(images_quanity):
@@ -97,7 +119,6 @@ def cifar_10_naivebayes_learn(images_rgb_means,classes):
         class_mean_sums[image_class][BLUE][0] += image[BLUE]
         class_measurements[image_class] += 1
 
-
     for i in range(10):
 
         class_mean_sums[i][RED][0] = class_mean_sums[i][RED][0] / class_measurements[i]
@@ -105,29 +126,29 @@ def cifar_10_naivebayes_learn(images_rgb_means,classes):
         class_mean_sums[i][BLUE][0] = class_mean_sums[i][BLUE][0] / class_measurements[i]
 
 
-    #starting std calculations
+    #Calculating prior probabilities
+    for i in range(10):
+        prior_p[i] = class_measurements[i] / len(classes)
+
+
+    #starting Cov_matrix calculations
+  #  cov_matrix = np.cov(images_rgb_means)
     for i in range(images_quanity):
         image_class = classes[i]
         image = images_rgb_means[i]
 
-        class_std_sums[image_class][RED][0] += np.square(image[RED] - class_mean_sums[image_class][RED][0])
-        class_std_sums[image_class][GREEN][0] += np.square(image[GREEN] - class_mean_sums[image_class][GREEN][0])
-        class_std_sums[image_class][BLUE][0] += np.square(image[BLUE] - class_mean_sums[image_class][BLUE][0])
+        cov_matrix[image_class] += np.cov(image)
 
     for i in range(10):
 
-        class_std_sums[i][RED][0] = np.sqrt(class_std_sums[i][RED][0] / class_measurements[i])
-        class_std_sums[i][GREEN][0] = np.sqrt(class_std_sums[i][GREEN][0] / class_measurements[i])
-        class_std_sums[i][BLUE][0] = np.sqrt(class_std_sums[i][BLUE][0] / class_measurements[i])
-
-
-    for i in range(10):
-        prior_p[i] = class_measurements[i] / len(classes)
-
-    return class_std_sums, class_mean_sums, prior_p
+        cov_matrix[i][RED][0] = np.sqrt(cov_matrix[i][RED][0] / class_measurements[i])
+        cov_matrix[i][GREEN][0] = np.sqrt(cov_matrix[i][GREEN][0] / class_measurements[i])
+        cov_matrix[i][BLUE][0] = np.sqrt(cov_matrix[i][BLUE][0] / class_measurements[i])
 
 
 
+
+    return cov_matrix, class_mean_sums, prior_p
 
 
 
@@ -179,9 +200,15 @@ t_images = t_images[0:DATA_SET_QUANITY]
 t_classes = t_classes[0:DATA_SET_QUANITY]
 
 
-rgb_means_1 = cifar_10_color(images_1)
-rgb_means_t = cifar_10_color(t_images)
+rgb_means_images_1 = cifar_10_color(images_1)
+rgb_means_images_t = cifar_10_color(t_images)
 
 
 
-exercise_1()
+#exercise_1()
+#cov_m = np.array((10,3,3))
+# cov_m = np.cov(rgb_means_images_1)
+# print(cov_m.shape)
+images_by_classes = divide_images_to_classes(rgb_means_images_1,classes_1)
+for i in range(10):
+    print('Class ',i,' shape : ', images_by_classes[i].shape)
