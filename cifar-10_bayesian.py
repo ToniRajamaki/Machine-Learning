@@ -78,6 +78,55 @@ def exercise_1():
     class_acc(predictionArray,t_classes)
     return
 
+def cifar_10_naivebayes_learn(images_rgb_means,classes):
+
+    images_quanity = len(classes);
+    class_mean_sums = np.zeros((10,3,1))
+
+    prior_p = np.zeros((10))
+
+    #array of 10 values, each value is quanity of how many images belong to this class
+    class_measurements = np.zeros((10))
+
+    #Calculating mean values for each class (r,g,b)
+    for i in range(images_quanity):
+        image_class = classes[i]
+        image = images_rgb_means[i]
+
+        class_mean_sums[image_class][RED][0] += image[RED]
+        class_mean_sums[image_class][GREEN][0] += image[GREEN]
+        class_mean_sums[image_class][BLUE][0] += image[BLUE]
+        class_measurements[image_class] += 1
+
+
+    for i in range(10):
+
+        class_mean_sums[i][RED][0] = class_mean_sums[i][RED][0] / class_measurements[i]
+        class_mean_sums[i][GREEN][0] = class_mean_sums[i][GREEN][0] / class_measurements[i]
+        class_mean_sums[i][BLUE][0] = class_mean_sums[i][BLUE][0] / class_measurements[i]
+
+
+
+
+    for i in range(10):
+        prior_p[i] = class_measurements[i] / len(classes)
+
+    return class_mean_sums, prior_p
+
+
+def excercise_2(training_images, training_classes):
+
+    means, prior_p = cifar_10_naivebayes_learn(training_images, training_classes)
+    images_sorted_by_class = divide_images_to_classes(training_images,training_classes)
+    cov_matrixes = calculate_cov_matrixes(images_sorted_by_class)
+
+
+
+
+   # predictionArray = nCm.naive_bayes_classification(rgb_means_images_t, means, cov_matrixes, prior_p)
+    #class_acc(predictionArray, t_classes)
+    return
+
 
 def divide_images_to_classes(images, classes):
 
@@ -149,7 +198,7 @@ def cifar_10_naivebayes_learn(images_rgb_means,classes):
 
 
 
-    return cov_matrix, class_mean_sums, prior_p
+    return  class_mean_sums, prior_p
 
 
 
@@ -223,5 +272,4 @@ def calculate_cov_matrixes(images_by_classes):
 
     return sigma
 
-class_sigmas = calculate_cov_matrixes(images_by_classes)
-
+excercise_2(rgb_means_images_1 ,classes_1)
