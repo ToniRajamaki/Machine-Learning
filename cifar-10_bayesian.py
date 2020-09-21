@@ -54,7 +54,7 @@ def cifar_10_naivebayes_learn(images_rgb_means,classes):
 
     images_quanity = len(classes);
     class_mean_sums = np.zeros((10,3,1))
-    class_variance_sums = np.zeros((10,3,1))
+    class_std_sums = np.zeros((10,3,1))
     prior_p = np.zeros((10))
 
     #array of 10 values, each value is quanity of how many images belong to this class
@@ -86,17 +86,15 @@ def cifar_10_naivebayes_learn(images_rgb_means,classes):
         image_class = classes[i]
         image = images_rgb_means[i]
 
-        class_variance_sums[image_class][RED][0] += np.square(image[RED] - class_mean_sums[image_class][RED][0])
-        class_variance_sums[image_class][GREEN][0] += np.square(image[GREEN] - class_mean_sums[image_class][GREEN][0])
-        class_variance_sums[image_class][BLUE][0] += np.square(image[BLUE] - class_mean_sums[image_class][BLUE][0])
-
-
+        class_std_sums[image_class][RED][0] += np.square(image[RED] - class_mean_sums[image_class][RED][0])
+        class_std_sums[image_class][GREEN][0] += np.square(image[GREEN] - class_mean_sums[image_class][GREEN][0])
+        class_std_sums[image_class][BLUE][0] += np.square(image[BLUE] - class_mean_sums[image_class][BLUE][0])
 
     for i in range(10):
 
-        class_variance_sums[i][RED][0] = np.sqrt(class_variance_sums[i][RED][0] / class_measurements[i])
-        class_variance_sums[i][GREEN][0] = np.sqrt(class_variance_sums[i][GREEN][0] / class_measurements[i])
-        class_variance_sums[i][BLUE][0] = np.sqrt(class_variance_sums[i][BLUE][0] / class_measurements[i])
+        class_std_sums[i][RED][0] = np.sqrt(class_std_sums[i][RED][0] / class_measurements[i])
+        class_std_sums[i][GREEN][0] = np.sqrt(class_std_sums[i][GREEN][0] / class_measurements[i])
+        class_std_sums[i][BLUE][0] = np.sqrt(class_std_sums[i][BLUE][0] / class_measurements[i])
 
 
     for i in range(10):
@@ -104,7 +102,7 @@ def cifar_10_naivebayes_learn(images_rgb_means,classes):
 
 
 
-    return class_variance_sums, class_mean_sums, prior_p
+    return class_std_sums, class_mean_sums, prior_p
 
 
 def class_acc(pred,gt):
@@ -131,10 +129,9 @@ def cifar10_classifier_naivebayes(x,mu,sigma,prior_p):
             probabilities[i] *= normpdf(x[j], mu[i][j], sigma[i][j])
             probabilities[i] *= prior_p[i]
 
-
     return np.argmax(probabilities)
 
-def test2(t_images, means, variances,prior_p):
+def naive_bayes_classification(t_images, means, variances,prior_p):
 
     predictionArray = np.zeros((len(t_images)))
 
@@ -159,7 +156,7 @@ classes_1 = np.array(classes_1)
 t_classes = np.array(t_classes)
 
 # How many pictures we take from the batch ( 1 - 10,000 )
-DATA_SET_QUANITY = 1000;
+DATA_SET_QUANITY = 2000;
 images_1 = images_1[0:DATA_SET_QUANITY]
 classes_1 = classes_1[0:DATA_SET_QUANITY]
 
@@ -171,6 +168,6 @@ rgb_means_1 = cifar_10_color(images_1)
 rgb_means_t = cifar_10_color(t_images)
 
 
-variances, means, prior_p = cifar_10_naivebayes_learn(rgb_means_1,classes_1)
-predictionArray = test2(rgb_means_t, means, variances, prior_p)
+stds, means, prior_p = cifar_10_naivebayes_learn(rgb_means_1,classes_1)
+predictionArray = naive_bayes_classification(rgb_means_t, means, stds, prior_p)
 class_acc(predictionArray,t_classes)
