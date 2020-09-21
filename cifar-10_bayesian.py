@@ -40,9 +40,6 @@ def get_training_data(string):
 
 
 # images ( quanity , 32 , 32 ,3 )
-
-
-
 def cifar_10_color(image_dataset):
 
     image_quanity = (image_dataset.shape[0]) # How many images we are processing
@@ -78,48 +75,14 @@ def exercise_1():
     class_acc(predictionArray,t_classes)
     return
 
-def cifar_10_naivebayes_learn(images_rgb_means,classes):
-
-    images_quanity = len(classes);
-    class_mean_sums = np.zeros((10,3,1))
-
-    prior_p = np.zeros((10))
-
-    #array of 10 values, each value is quanity of how many images belong to this class
-    class_measurements = np.zeros((10))
-
-    #Calculating mean values for each class (r,g,b)
-    for i in range(images_quanity):
-        image_class = classes[i]
-        image = images_rgb_means[i]
-
-        class_mean_sums[image_class][RED][0] += image[RED]
-        class_mean_sums[image_class][GREEN][0] += image[GREEN]
-        class_mean_sums[image_class][BLUE][0] += image[BLUE]
-        class_measurements[image_class] += 1
-
-
-    for i in range(10):
-
-        class_mean_sums[i][RED][0] = class_mean_sums[i][RED][0] / class_measurements[i]
-        class_mean_sums[i][GREEN][0] = class_mean_sums[i][GREEN][0] / class_measurements[i]
-        class_mean_sums[i][BLUE][0] = class_mean_sums[i][BLUE][0] / class_measurements[i]
-
-
-
-
-    for i in range(10):
-        prior_p[i] = class_measurements[i] / len(classes)
-
-    return class_mean_sums, prior_p
 
 
 def excercise_2(training_images, training_classes):
 
-    means, prior_p = cifar_10_naivebayes_learn(training_images, training_classes)
+    means, prior_p = cifar_10_bayes_learn(training_images, training_classes)
     images_sorted_by_class = divide_images_to_classes(training_images,training_classes)
     cov_matrixes = calculate_cov_matrixes(images_sorted_by_class)
-
+    print()
 
 
 
@@ -147,13 +110,11 @@ def divide_images_to_classes(images, classes):
     return class_array
 
 
-###################################################################################################################
-# COVMATRIX
-def cifar_10_naivebayes_learn(images_rgb_means,classes):
+def cifar_10_bayes_learn(images_rgb_means,classes):
 
     images_quanity = len(classes);
     class_mean_sums = np.zeros((10,3,1))
-    cov_matrix = np.zeros((10,3,3))
+
     prior_p = np.zeros((10))
 
     #array of 10 values, each value is quanity of how many images belong to this class
@@ -181,20 +142,6 @@ def cifar_10_naivebayes_learn(images_rgb_means,classes):
         prior_p[i] = class_measurements[i] / len(classes)
 
 
-    #starting Cov_matrix calculations
-  #  cov_matrix = np.cov(images_rgb_means)
-    for i in range(images_quanity):
-        image_class = classes[i]
-        image = images_rgb_means[i]
-
-        cov_matrix[image_class] += np.cov(image)
-
-    for i in range(10):
-
-        cov_matrix[i][RED][0] = np.sqrt(cov_matrix[i][RED][0] / class_measurements[i])
-        cov_matrix[i][GREEN][0] = np.sqrt(cov_matrix[i][GREEN][0] / class_measurements[i])
-        cov_matrix[i][BLUE][0] = np.sqrt(cov_matrix[i][BLUE][0] / class_measurements[i])
-
 
 
 
@@ -202,7 +149,7 @@ def cifar_10_naivebayes_learn(images_rgb_means,classes):
 
 
 
-def cifar10_classifier_naivebayes(x,mu,sigma,prior_p):
+def cifar10_classifier_bayes(x,mu,sigma,prior_p):
 
     probabilities = np.ones(10)
     normpdf = norm.pdf
@@ -213,7 +160,7 @@ def cifar10_classifier_naivebayes(x,mu,sigma,prior_p):
 
     return np.argmax(probabilities)
 
-def naive_bayes_classification(t_images, means, variances,prior_p):
+def bayes_classification(t_images, means, variances,prior_p):
 
     predictionArray = np.zeros((len(t_images)))
 
@@ -222,7 +169,7 @@ def naive_bayes_classification(t_images, means, variances,prior_p):
         count = count -1
         print(count)
         test_image = t_images[i]
-        best_class = cifar10_classifier_naivebayes(test_image,means,variances,prior_p)
+        best_class = cifar10_classifier_bayes(test_image,means,variances,prior_p)
         predictionArray[i] = best_class
 
     return predictionArray
