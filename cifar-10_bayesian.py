@@ -163,26 +163,40 @@ def calculate_cov_matrixes(images_by_classes):
 
 
 # images ( quanity , 32 , 32 ,3 )
-def cifar_10_color(image_dataset):
+def cifar_10_color(image_dataset, N = 1):
 
     image_quanity = (image_dataset.shape[0]) # How many images we are processing
     image_rgb_mean = np.zeros((image_quanity, 3))
 
 
 
-    for i in range(image_quanity):
+    for image in range(image_quanity):
         # Convert images to mean values of each color channel
-        img = image_dataset[i]
-        img_8x8 = resize(img, (8, 8))  # this is probably useless
-        img_1x1 = resize(img, (1, 1))
-        r_vals = img_1x1[:, :, 0].reshape(1 * 1)
-        g_vals = img_1x1[:, :, 1].reshape(1 * 1)
-        b_vals = img_1x1[:, :, 2].reshape(1 * 1)
-        mu_r = r_vals.mean()  # mean value of this color channel for 1 image (decimal 0 - 1
-        mu_g = g_vals.mean()
-        mu_b = b_vals.mean()
+        img = image_dataset[image]
 
-        image_rgb_mean[i, :] = (mu_r, mu_g, mu_b)  # shape = ( imagequanity, 3 )
+        N = 2
+        img_NxN = resize(img, (N,N))
+        image_rgb_mean = np.empty(shape = (image_quanity,4,3))
+
+
+        #Taking values for each channel
+        r_vals = img_NxN[:, :, 0].reshape(N * N)
+        g_vals = img_NxN[:, :, 1].reshape(N * N)
+        b_vals = img_NxN[:, :, 2].reshape(N * N)
+
+
+        if(N == 1):
+            #calculating means for each channel
+            mu_r = r_vals.mean()
+            mu_g = g_vals.mean()
+            mu_b = b_vals.mean()
+            image_rgb_mean[image, :] = (mu_r, mu_g, mu_b)  # shape = ( imagequanity, 3 )
+        else:
+            for pixel in range(2*N):
+                image_rgb_mean[image][pixel][RED] = r_vals[pixel]
+                image_rgb_mean[image][pixel][GREEN] = g_vals[pixel]
+                image_rgb_mean[image][pixel][BLUE] = b_vals[pixel]
+
 
     return image_rgb_mean
 
@@ -197,7 +211,7 @@ classes_1 = np.array(classes_1)
 t_classes = np.array(t_classes)
 
 # How many pictures we take from the batch ( 1 - 10,000 )
-DATA_SET_QUANITY = 1000;
+DATA_SET_QUANITY = 100;
 images_1 = images_1[0:DATA_SET_QUANITY]
 classes_1 = classes_1[0:DATA_SET_QUANITY]
 
@@ -205,13 +219,12 @@ t_images = t_images[0:DATA_SET_QUANITY]
 t_classes = t_classes[0:DATA_SET_QUANITY]
 
 
-rgb_means_images_1 = cifar_10_color(images_1)
+#rgb_means_images_1 = cifar_10_color(images_1)
 rgb_means_images_t = cifar_10_color(t_images)
-
-
-
-
+print(rgb_means_images_t.shape)
 
 
 #exercise_1()
 #excercise_2(rgb_means_images_1 ,classes_1)
+
+
