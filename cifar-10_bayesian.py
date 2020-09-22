@@ -42,33 +42,8 @@ def get_training_data(string):
     return images,classes
 
 
-# images ( quanity , 32 , 32 ,3 )
-def cifar_10_color(image_dataset):
-
-    image_quanity = (image_dataset.shape[0]) # How many images we are processing
-    image_rgb_mean = np.zeros((image_quanity, 3))
 
 
-
-    for i in range(image_quanity):
-        # Convert images to mean values of each color channel
-        img = image_dataset[i]
-        img_8x8 = resize(img, (8, 8))  # this is probably useless
-        img_1x1 = resize(img, (1, 1))
-        r_vals = img_1x1[:, :, 0].reshape(1 * 1)
-        g_vals = img_1x1[:, :, 1].reshape(1 * 1)
-        b_vals = img_1x1[:, :, 2].reshape(1 * 1)
-        mu_r = r_vals.mean()  # mean value of this color channel for 1 image (decimal 0 - 1
-        mu_g = g_vals.mean()
-        mu_b = b_vals.mean()
-
-        image_rgb_mean[i, :] = (mu_r, mu_g, mu_b)  # shape = ( imagequanity, 3 )
-
-
-    return image_rgb_mean
-
-#images_rgb_means shape  = ( quanity, 3 )
-#not 3x3 covariance matrix
 
 def exercise_1():
 
@@ -142,9 +117,6 @@ def cifar_10_bayes_learn(images_rgb_means,classes):
         prior_p[i] = class_measurements[i] / len(classes)
 
 
-
-
-
     return  class_mean_sums, prior_p
 
 
@@ -161,19 +133,16 @@ def bayes_classification(t_images, means, cov_matrixes,prior_p):
         count = count -1
         print(count)
         test_image = t_images[i]
-        best_class = cifar10_classifier_bayes(test_image,means,cov_matrixes,prior_p)
+        best_class = get_best_matching_class(test_image,means,cov_matrixes,prior_p)
         predictionArray[i] = best_class
 
     return predictionArray
 
 
 #2, probability is calculated here
-def cifar10_classifier_bayes(x,mu, cov_matrixes,prior_p):
+def get_best_matching_class(x,mu, cov_matrixes,prior_p):
 
     probabilities = np.ones(10)
-    #mean = np.array([mu[0][0], mu[1][1], mu[2][2]])
-    #y = multivariate_normal(mu[2],cov_matrixes[1]).pdf(x)
-    # y = multivariate_normal.pdf(x,mean=mu[1][0],cov=cov_matrixes[0][0][0])
 
     for i in range(10): #classes
 
@@ -182,6 +151,40 @@ def cifar10_classifier_bayes(x,mu, cov_matrixes,prior_p):
         probabilities[i] = (y*prior_p[i])
 
     return np.argmax(probabilities)
+
+
+def calculate_cov_matrixes(images_by_classes):
+
+    sigma = np.empty(shape=(10, 3, 3))
+    for i in range(10):
+        sigma[i] = np.cov(images_by_classes[i],rowvar=False)
+
+    return sigma
+
+
+# images ( quanity , 32 , 32 ,3 )
+def cifar_10_color(image_dataset):
+
+    image_quanity = (image_dataset.shape[0]) # How many images we are processing
+    image_rgb_mean = np.zeros((image_quanity, 3))
+
+
+
+    for i in range(image_quanity):
+        # Convert images to mean values of each color channel
+        img = image_dataset[i]
+        img_8x8 = resize(img, (8, 8))  # this is probably useless
+        img_1x1 = resize(img, (1, 1))
+        r_vals = img_1x1[:, :, 0].reshape(1 * 1)
+        g_vals = img_1x1[:, :, 1].reshape(1 * 1)
+        b_vals = img_1x1[:, :, 2].reshape(1 * 1)
+        mu_r = r_vals.mean()  # mean value of this color channel for 1 image (decimal 0 - 1
+        mu_g = g_vals.mean()
+        mu_b = b_vals.mean()
+
+        image_rgb_mean[i, :] = (mu_r, mu_g, mu_b)  # shape = ( imagequanity, 3 )
+
+    return image_rgb_mean
 
 
 
@@ -194,7 +197,7 @@ classes_1 = np.array(classes_1)
 t_classes = np.array(t_classes)
 
 # How many pictures we take from the batch ( 1 - 10,000 )
-DATA_SET_QUANITY = 10000;
+DATA_SET_QUANITY = 1000;
 images_1 = images_1[0:DATA_SET_QUANITY]
 classes_1 = classes_1[0:DATA_SET_QUANITY]
 
@@ -207,21 +210,8 @@ rgb_means_images_t = cifar_10_color(t_images)
 
 
 
+
+
+
 #exercise_1()
-#cov_m = np.array((10,3,3))
-# cov_m = np.cov(rgb_means_images_1)
-# print(cov_m.shape)
-images_by_classes = divide_images_to_classes(rgb_means_images_1,classes_1)
-
-#for i in range(10):
- #   print('Class ',i,' shape : ', images_by_classes[i].shape)
-
-def calculate_cov_matrixes(images_by_classes):
-
-    sigma = np.empty(shape=(10, 3, 3))
-    for i in range(10):
-        sigma[i] = np.cov(images_by_classes[i],rowvar=False)
-
-    return sigma
-
-excercise_2(rgb_means_images_1 ,classes_1)
+#excercise_2(rgb_means_images_1 ,classes_1)
