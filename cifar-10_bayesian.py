@@ -174,9 +174,9 @@ def cifar_10_color(image_dataset, N = 1):
         # Convert images to mean values of each color channel
         img = image_dataset[image]
 
-        N = 2
+
         img_NxN = resize(img, (N,N))
-        image_rgb_mean = np.empty(shape = (image_quanity,4,3))
+        image_rgb_mean = np.empty(shape = (image_quanity,N*N,3))
 
 
         #Taking values for each channel
@@ -192,7 +192,7 @@ def cifar_10_color(image_dataset, N = 1):
             mu_b = b_vals.mean()
             image_rgb_mean[image, :] = (mu_r, mu_g, mu_b)  # shape = ( imagequanity, 3 )
         else:
-            for pixel in range(2*N):
+            for pixel in range(N*N):
                 image_rgb_mean[image][pixel][RED] = r_vals[pixel]
                 image_rgb_mean[image][pixel][GREEN] = g_vals[pixel]
                 image_rgb_mean[image][pixel][BLUE] = b_vals[pixel]
@@ -220,7 +220,8 @@ t_classes = t_classes[0:DATA_SET_QUANITY]
 
 
 #rgb_means_images_1 = cifar_10_color(images_1)
-rgb_means_images_t = cifar_10_color(t_images)
+N = 2
+rgb_means_images_t = cifar_10_color(t_images,N)
 print(rgb_means_images_t.shape)
 
 
