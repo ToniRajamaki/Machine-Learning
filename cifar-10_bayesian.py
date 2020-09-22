@@ -1,7 +1,10 @@
 import pickle
 import numpy as np
-from numpy.core._multiarray_umath import ndarray
-from scipy.stats import norm
+
+
+from scipy.stats import multivariate_normal
+
+
 
 import cifar10_naiveBayes_noCovMatrix as nCm
 from skimage.transform import rescale, resize, downscale_local_mean
@@ -82,12 +85,9 @@ def excercise_2(training_images, training_classes):
     means, prior_p = cifar_10_bayes_learn(training_images, training_classes)
     images_sorted_by_class = divide_images_to_classes(training_images,training_classes)
     cov_matrixes = calculate_cov_matrixes(images_sorted_by_class)
-    print()
 
-
-
-   # predictionArray = nCm.naive_bayes_classification(rgb_means_images_t, means, cov_matrixes, prior_p)
-    #class_acc(predictionArray, t_classes)
+    predictionArray = bayes_classification(rgb_means_images_t, means, cov_matrixes, prior_p)
+    class_acc(predictionArray, t_classes)
     return
 
 
@@ -149,18 +149,10 @@ def cifar_10_bayes_learn(images_rgb_means,classes):
 
 
 
-def cifar10_classifier_bayes(x,mu,sigma,prior_p):
 
-    probabilities = np.ones(10)
-    normpdf = norm.pdf
-    for i in range(10):
-        for j in range(3):
-            probabilities[i] *= normpdf(x[j], mu[i][j], sigma[i][j])
-            probabilities[i] *= prior_p[i]
 
-    return np.argmax(probabilities)
-
-def bayes_classification(t_images, means, variances,prior_p):
+#1
+def bayes_classification(t_images, means, cov_matrixes,prior_p):
 
     predictionArray = np.zeros((len(t_images)))
 
@@ -169,14 +161,27 @@ def bayes_classification(t_images, means, variances,prior_p):
         count = count -1
         print(count)
         test_image = t_images[i]
-        best_class = cifar10_classifier_bayes(test_image,means,variances,prior_p)
+        best_class = cifar10_classifier_bayes(test_image,means,cov_matrixes,prior_p)
         predictionArray[i] = best_class
 
     return predictionArray
 
 
+#2, probability is calculated here
+def cifar10_classifier_bayes(x,mu, cov_matrixes,prior_p):
 
+    probabilities = np.ones(10)
+    #mean = np.array([mu[0][0], mu[1][1], mu[2][2]])
+    #y = multivariate_normal(mu[2],cov_matrixes[1]).pdf(x)
+    # y = multivariate_normal.pdf(x,mean=mu[1][0],cov=cov_matrixes[0][0][0])
 
+    for i in range(10): #classes
+
+        mean = [mu[i][0][0], mu[i][1][0], mu[i][2][0]]
+        y = multivariate_normal(mean, cov_matrixes[i]).pdf(x)
+        probabilities[i] = (y*prior_p[i])
+
+    return np.argmax(probabilities)
 
 
 
@@ -189,7 +194,7 @@ classes_1 = np.array(classes_1)
 t_classes = np.array(t_classes)
 
 # How many pictures we take from the batch ( 1 - 10,000 )
-DATA_SET_QUANITY = 50;
+DATA_SET_QUANITY = 10000;
 images_1 = images_1[0:DATA_SET_QUANITY]
 classes_1 = classes_1[0:DATA_SET_QUANITY]
 
