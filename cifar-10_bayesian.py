@@ -155,7 +155,8 @@ def get_best_matching_class(x,mu, cov_matrixes,prior_p):
 
 def calculate_cov_matrixes(images_by_classes):
 
-    sigma = np.empty(shape=(10, 3, 3))
+    sigma = np.empty(shape=(10, 12, 12))
+
     for i in range(10):
         sigma[i] = np.cov(images_by_classes[i],rowvar=False)
 
@@ -218,11 +219,31 @@ classes_1 = classes_1[0:DATA_SET_QUANITY]
 t_images = t_images[0:DATA_SET_QUANITY]
 t_classes = t_classes[0:DATA_SET_QUANITY]
 
+# for c in class_array:  # Classes 10 times
+#     for image in c:  # image quanity,  about 10% of total images
+#         for pixel in image:  # 4 times
+#             for color in pixel:  # 3 times ( R ; G ; B)
+#                 print(color)
 
-#rgb_means_images_1 = cifar_10_color(images_1)
+def means_for_each_class(class_array,N):
+
+    means = []
+    for i in range(10):
+        means.append(np.mean(class_array[i], axis=0))
+
+    return means
+
+#rgb_means_images_t = cifar_10_color(t_images)
 N = 2
-rgb_means_images_t = cifar_10_color(t_images,N)
-print(rgb_means_images_t.shape)
+rgb_means_images_1 = cifar_10_color(images_1,N)
+class_array = divide_images_to_classes(rgb_means_images_1,classes_1)
+
+means = means_for_each_class(class_array,N)
+m = np.array(means)
+#cov_matrixes = calculate_cov_matrixes(class_array)
+# print(cov_matrixes.shape)
+
+
 
 
 #exercise_1()
