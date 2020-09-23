@@ -145,9 +145,10 @@ def get_best_matching_class(x,mu, cov_matrixes,prior_p):
     probabilities = np.ones(10)
 
     for i in range(10): #classes
-        print(mu[i])
-        y = multivariate_normal(mu[i], cov_matrixes[i]).pdf(x)
+
+        y = multivariate_normal(mu[i], cov_matrixes[i],allow_singular=True).pdf(x)
         probabilities[i] = (y*0.1)
+       
 
     return np.argmax(probabilities)
 
@@ -166,17 +167,13 @@ def calculate_cov_matrixes(images_by_classes):
 def cifar_10_color(image_dataset, N = 1):
 
     image_quanity = (image_dataset.shape[0]) # How many images we are processing
-    image_rgb_mean = np.zeros((image_quanity, 3))
-
+    image_rgb_mean = np.zeros(shape =(image_quanity, N*N*3))
 
 
     for image in range(image_quanity):
         # Convert images to mean values of each color channel
         img = image_dataset[image]
-
-
         img_NxN = resize(img, (N,N))
-        image_rgb_mean = np.empty(shape = (image_quanity,N*N*3))
 
 
         #Taking values for each channel
@@ -192,12 +189,13 @@ def cifar_10_color(image_dataset, N = 1):
             mu_b = b_vals.mean()
             image_rgb_mean[image, :] = (mu_r, mu_g, mu_b)  # shape = ( imagequanity, 3 )
         else:
-            for pixel in range(N*N):
-                image_rgb_mean[image][pixel] = r_vals[pixel]
-                image_rgb_mean[image][pixel] = g_vals[pixel]
-                image_rgb_mean[image][pixel] = b_vals[pixel]
 
-    print("Image Rgb mean = " ,image_rgb_mean.shape)
+            all_vals = np.concatenate((r_vals, g_vals, b_vals))
+            image_rgb_mean[image] = all_vals
+
+
+
+
     return image_rgb_mean
 
 
@@ -240,15 +238,12 @@ rgb_means_images_1 = cifar_10_color(images_1,N)
 
 class_array = divide_images_to_classes(rgb_means_images_1,classes_1)
 
-for i in range(10):
-    print(class_array[i].shape)
+
 
 means = means_for_each_class(class_array,N)
 m = np.array(means)
-print("means : ")
-print(m.shape)
 cov_matrixes = calculate_cov_matrixes(class_array)
-print(cov_matrixes.shape)
+
                                                                             #prior p
 predictionArray = bayes_classification(rgb_means_images_t, means, cov_matrixes, 0)
 class_acc(predictionArray, t_classes)
