@@ -86,40 +86,6 @@ def divide_images_to_classes(images, classes):
     return class_array
 
 
-def cifar_10_bayes_learn(images_rgb_means,classes):
-
-    images_quanity = len(classes);
-    class_mean_sums = np.zeros((10,3,1))
-
-    prior_p = np.zeros((10))
-
-    #array of 10 values, each value is quanity of how many images belong to this class
-    class_measurements = np.zeros((10))
-
-    #Calculating mean values for each class (r,g,b)
-    for i in range(images_quanity):
-        image_class = classes[i]
-        image = images_rgb_means[i]
-
-        class_mean_sums[image_class][RED][0] += image[RED]
-        class_mean_sums[image_class][GREEN][0] += image[GREEN]
-        class_mean_sums[image_class][BLUE][0] += image[BLUE]
-        class_measurements[image_class] += 1
-
-    for i in range(10):
-
-        class_mean_sums[i][RED][0] = class_mean_sums[i][RED][0] / class_measurements[i]
-        class_mean_sums[i][GREEN][0] = class_mean_sums[i][GREEN][0] / class_measurements[i]
-        class_mean_sums[i][BLUE][0] = class_mean_sums[i][BLUE][0] / class_measurements[i]
-
-
-    #Calculating prior probabilities
-    for i in range(10):
-        prior_p[i] = class_measurements[i] / len(classes)
-
-
-    return  class_mean_sums, prior_p
-
 
 
 
@@ -145,16 +111,13 @@ def get_best_matching_class(x,mu, cov_matrixes,prior_p):
 
     probabilities = np.ones(10)
 
-
-
-
     for i in range(10): #classes
 
         # y = multivariate_normal(mu[i], cov_matrixes[i]).pdf(x)
 
 
         y = multivariate_normal.logpdf(x,mean = mu[i], cov=cov_matrixes[i])
-        probabilities[i] = (y*0.1)
+        probabilities[i] = (y*prior_p[i])
 
 
     return np.argmax(probabilities)
@@ -207,6 +170,31 @@ def cifar_10_color(image_dataset, N = 1):
 
 
 
+def means_for_each_class(class_array,N):
+
+    means = []
+    for i in range(10):
+        means.append(np.mean(class_array[i], axis=0))
+
+    return means
+
+
+def cifar_10_bayes_learn(images_rgb_means, classes):
+
+    prior_p = np.zeros((10))
+    class_array = divide_images_to_classes(rgb_means_images_1, classes_1)
+    class_measurements = np.zeros((10))
+    means = means_for_each_class(class_array, N)
+    cov_matrixes = calculate_cov_matrixes(class_array, N)
+    for i in range(10):
+        prior_p[i] = len(class_array[i]) / len(classes)
+
+
+    return means, cov_matrixes,prior_p
+
+
+
+
 #Getting the training data from batch 1
 images_1, classes_1 = get_training_data('cifar-10-batches-py/data_batch_1')
 t_images, t_classes = get_training_data('cifar-10-batches-py/test_batch')
@@ -218,52 +206,17 @@ t_classes = np.array(t_classes)
 # How many pictures we take from the batch ( 1 - 10,000 )
 DATA_SET_QUANITY = 10000;
 TEST_DATA = 1000
+N = 1
 images_1 = images_1[0:DATA_SET_QUANITY]
 classes_1 = classes_1[0:DATA_SET_QUANITY]
-
 t_images = t_images[0:TEST_DATA]
 t_classes = t_classes[0:TEST_DATA]
-
-# for c in class_array:  # Classes 10 times
-#     for image in c:  # image quanity,  about 10% of total images
-#         for pixel in image:  # 4 times
-#             for color in pixel:  # 3 times ( R ; G ; B)
-#                 print(color)
-
-def means_for_each_class(class_array,N):
-
-    means = []
-    for i in range(10):
-        means.append(np.mean(class_array[i], axis=0))
-
-    return means
-
-
-N = 1
-
 rgb_means_images_t = cifar_10_color(t_images,N)
 rgb_means_images_1 = cifar_10_color(images_1,N)
 
-class_array = divide_images_to_classes(rgb_means_images_1,classes_1)
 
-
-
-means = means_for_each_class(class_array,N)
-
-cov_matrixes = calculate_cov_matrixes(class_array,N)
-
-
-                                                                            #prior p
-predictionArray = bayes_classification(rgb_means_images_t, means, cov_matrixes, 0)
+p_means, p_cov_matrixes, p_prior_probability = cifar_10_bayes_learn(rgb_means_images_1,classes_1)
+predictionArray = bayes_classification(rgb_means_images_t, p_means, p_cov_matrixes, p_prior_probability)
 class_acc(predictionArray, t_classes)
-
-# classTwoImages = class_array[2]
-# print(classTwoImages)
-# cov = np.cov(classTwoImages,rowvar=False)
-# print(cov)
-
-
-#exercise_1()
-#excercise_2(rgb_means_images_1 ,classes_1)
 
 
