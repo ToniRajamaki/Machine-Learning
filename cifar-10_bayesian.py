@@ -6,6 +6,7 @@ from scipy.stats import multivariate_normal
 
 
 
+
 import cifar10_naiveBayes_noCovMatrix as nCm
 from skimage.transform import rescale, resize, downscale_local_mean
 
@@ -144,18 +145,24 @@ def get_best_matching_class(x,mu, cov_matrixes,prior_p):
 
     probabilities = np.ones(10)
 
+
+
+
     for i in range(10): #classes
 
-        y = multivariate_normal(mu[i], cov_matrixes[i],allow_singular=True).pdf(x)
+        # y = multivariate_normal(mu[i], cov_matrixes[i]).pdf(x)
+
+
+        y = multivariate_normal.logpdf(x,mean = mu[i], cov=cov_matrixes[i])
         probabilities[i] = (y*0.1)
-       
+
 
     return np.argmax(probabilities)
 
 
-def calculate_cov_matrixes(images_by_classes):
+def calculate_cov_matrixes(images_by_classes,N):
 
-    sigma = np.empty(shape=(10, 12, 12))
+    sigma = np.empty(shape=(10, N*N*3, N*N*3))
 
     for i in range(10):
         sigma[i] = np.cov(images_by_classes[i],rowvar=False)
@@ -209,12 +216,13 @@ classes_1 = np.array(classes_1)
 t_classes = np.array(t_classes)
 
 # How many pictures we take from the batch ( 1 - 10,000 )
-DATA_SET_QUANITY = 100;
+DATA_SET_QUANITY = 10000;
+TEST_DATA = 1000
 images_1 = images_1[0:DATA_SET_QUANITY]
 classes_1 = classes_1[0:DATA_SET_QUANITY]
 
-t_images = t_images[0:DATA_SET_QUANITY]
-t_classes = t_classes[0:DATA_SET_QUANITY]
+t_images = t_images[0:TEST_DATA]
+t_classes = t_classes[0:TEST_DATA]
 
 # for c in class_array:  # Classes 10 times
 #     for image in c:  # image quanity,  about 10% of total images
@@ -231,7 +239,7 @@ def means_for_each_class(class_array,N):
     return means
 
 
-N = 2
+N = 1
 
 rgb_means_images_t = cifar_10_color(t_images,N)
 rgb_means_images_1 = cifar_10_color(images_1,N)
@@ -241,8 +249,9 @@ class_array = divide_images_to_classes(rgb_means_images_1,classes_1)
 
 
 means = means_for_each_class(class_array,N)
-m = np.array(means)
-cov_matrixes = calculate_cov_matrixes(class_array)
+
+cov_matrixes = calculate_cov_matrixes(class_array,N)
+
 
                                                                             #prior p
 predictionArray = bayes_classification(rgb_means_images_t, means, cov_matrixes, 0)
