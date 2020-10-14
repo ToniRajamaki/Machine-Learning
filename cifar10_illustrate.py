@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import random
 import math
 import time
-from PIL import Image
+
 
 
 
